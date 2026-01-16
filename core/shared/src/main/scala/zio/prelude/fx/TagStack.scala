@@ -30,7 +30,7 @@ private final class TagStack[A <: AnyRef] { self =>
     if (used == ArrSize) {
       val newArr = new Array[AnyRef](ArrSize + 1)
       val tags   = new Array[Int](1)
-      tags(0)   = if (tag) 2 else 0 // first item will go to array(1), so set the second bit
+      tags(0) = if (tag) 2 else 0 // first item will go to array(1), so set the second bit
       newArr(0) = array0
       newArr(1) = a
       newArr(ArrSize) = tags
