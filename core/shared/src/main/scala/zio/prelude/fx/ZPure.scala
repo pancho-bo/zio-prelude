@@ -774,8 +774,8 @@ object ZPure {
   private val succeedNone: ZPure[Nothing, Any, Nothing, Any, Nothing, Option[Nothing]] = Succeed(None)
   private val succeedUnitFn                                                            = (_: Any) => succeedUnit
 
-  private final val TagFlatMap = false
-  private final val TagMap     = true
+  private final val TagNotSet = false
+  private final val TagFMap   = true
 
   /**
    * Constructs a computation, catching any `Throwable` that is thrown.
@@ -1225,12 +1225,12 @@ object ZPure {
 
               case fmap0: FMap[Any, Any, Any, Any, Any, Any, Any] =>
                 curZPure = fmap0.value
-                stack.push(TagFlatMap, continuation)
-                stack.push(TagMap, fmap0.run0)
+                stack.push(TagNotSet, continuation)
+                stack.push(TagFMap, fmap0.run0)
 
               case _ =>
                 curZPure = nested
-                stack.push(TagFlatMap, continuation)
+                stack.push(TagNotSet, continuation)
             }
 
           case succeed0: Succeed[Any] =>
@@ -1246,7 +1246,7 @@ object ZPure {
 
           case fmap0: FMap[Any, Any, Any, Any, Any, Any, Any] =>
             curZPure = fmap0.value
-            stack.push(TagMap, fmap0.run0)
+            stack.push(TagFMap, fmap0.run0)
 
           case fold0: Fold[Any, Any, Any, Any, Any, Any, Any, Any, Any] =>
             val state = s0
@@ -1276,7 +1276,7 @@ object ZPure {
               )
             }
 
-            stack.push(TagFlatMap, fold)
+            stack.push(TagNotSet, fold)
             curZPure = fold0.value
 
           case log0: Log[Any, Any] =>
