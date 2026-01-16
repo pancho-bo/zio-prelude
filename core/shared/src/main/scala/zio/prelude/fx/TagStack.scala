@@ -8,7 +8,7 @@ private final class TagStack[A <: AnyRef] { self =>
 
   private[this] var array  = new Array[AnyRef](ArrSize + 1)
   private[this] var packed = 0
-  array(ArrSize) = new Array[Byte](ArrSize)
+  array(ArrSize) = new Array[Boolean](ArrSize)
 
   def clear(): Unit = {
     var i = 0
@@ -22,21 +22,22 @@ private final class TagStack[A <: AnyRef] { self =>
   /**
    * Pushes an item onto the stack.
    */
-  def push(tag: Byte, a: A): Unit = {
+  def push(tag: Boolean, a: A): Unit = {
     val packed0 = packed
     val used    = packed0 & 0xf
+    val array   = this.array
     if (used == ArrSize) {
       val newArr    = new Array[AnyRef](ArrSize + 1)
-      val newTagArr = new Array[Byte](ArrSize)
+      val newTagArr = new Array[Boolean](ArrSize)
       newArr(ArrSize) = newTagArr
       newArr(0) = array
       newArr(1) = a
       newTagArr(1) = tag
-      array = newArr
+      this.array = newArr
       packed += 3
     } else {
       array(used) = a
-      (array(ArrSize).asInstanceOf[Array[Byte]])(used) = tag
+      (array(ArrSize).asInstanceOf[Array[Boolean]])(used) = tag
       packed += 1
     }
   }
@@ -64,18 +65,18 @@ private final class TagStack[A <: AnyRef] { self =>
     }
   }
 
-  def peek: Byte = {
+  def peek: Boolean = {
     val packed0 = packed
     if (packed0 == 0) {
-      0
+      false
     } else {
       val used = packed0 & 0xf
       val idx  = used - 1
       if (idx == 0 && packed0 != 1) {
-        val tagArray = (array(idx).asInstanceOf[Array[AnyRef]])(ArrSize).asInstanceOf[Array[Byte]]
+        val tagArray = (array(idx).asInstanceOf[Array[AnyRef]])(ArrSize).asInstanceOf[Array[Boolean]]
         tagArray(ArrSize - 1)
       } else {
-        (array(ArrSize).asInstanceOf[Array[Byte]])(idx)
+        (array(ArrSize).asInstanceOf[Array[Boolean]])(idx)
       }
     }
   }
