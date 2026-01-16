@@ -6,10 +6,10 @@ package zio.prelude.fx
 private final class TagStack[A <: AnyRef] { self =>
   import TagStack._
 
-  private[this] var array      = new Array[AnyRef](ArrSize + 1)
-  private[this] var packed     = 0
-  private[this] var packedTags = 0
-  array(ArrSize) = new Array[Int](1)
+  private[this] var array  = new Array[AnyRef](ArrSize + 1)
+  private[this] var packed = 0
+
+  array(ArrSize) = new Array[Int](1) // keep tags as bits in this Int
 
   def clear(): Unit = {
     var i = 0
@@ -26,25 +26,23 @@ private final class TagStack[A <: AnyRef] { self =>
   def push(tag: Boolean, a: A): Unit = {
     val packed0 = packed
     val used    = packed0 & 0xf
-    val array   = this.array
+    val array0  = array
     if (used == ArrSize) {
-      val newArr    = new Array[AnyRef](ArrSize + 1)
-      val newTagArr = new Array[Int](1)
-      newArr(ArrSize) = newTagArr
-      newArr(0) = array
+      val newArr = new Array[AnyRef](ArrSize + 1)
+      val tags   = new Array[Int](1)
+      tags(0)   = if (tag) 2 else 0 // first item will go to array(1), so set the second bit
+      newArr(0) = array0
       newArr(1) = a
-      packedTags = if (tag) 2 else 0
-      newTagArr(0) = packedTags
-      this.array = newArr
+      newArr(ArrSize) = tags
+      array = newArr
       packed += 3
     } else {
-      array(used) = a
+      array0(used) = a
       if (tag) {
-        packedTags |= 1 << used
+        (array0(ArrSize).asInstanceOf[Array[Int]])(0) |= 1 << used
       } else {
-        packedTags &= ~(1 << used)
+        (array0(ArrSize).asInstanceOf[Array[Int]])(0) &= ~(1 << used)
       }
-      (array(ArrSize).asInstanceOf[Array[Int]])(0) = packedTags
       packed += 1
     }
   }
@@ -63,7 +61,6 @@ private final class TagStack[A <: AnyRef] { self =>
       if (idx == 0 && packed0 != 1) {
         val arr0 = a.asInstanceOf[Array[AnyRef]]
         a = arr0(ArrSize - 1)
-        packedTags = arr0(ArrSize).asInstanceOf[Array[Int]](0)
         array = arr0
         packed -= 3
       } else {
@@ -73,7 +70,10 @@ private final class TagStack[A <: AnyRef] { self =>
     }
   }
 
-  def peek: Boolean = {
+  /**
+   *  Returns `true` if tag is set for the item at the top. Returns `false` if the stack is empty.
+   */
+  def topTagged: Boolean = {
     val packed0 = packed
     if (packed0 == 0) {
       false
@@ -84,7 +84,8 @@ private final class TagStack[A <: AnyRef] { self =>
         val tags = (array(idx).asInstanceOf[Array[AnyRef]])(ArrSize).asInstanceOf[Array[Int]](0)
         (tags >> (ArrSize - 1) & 1) == 1
       } else {
-        (packedTags >> idx & 1) == 1
+        val tags = (array(ArrSize).asInstanceOf[Array[Int]])(0)
+        (tags >> idx & 1) == 1
       }
     }
   }
