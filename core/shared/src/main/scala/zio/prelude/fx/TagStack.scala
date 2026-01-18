@@ -8,6 +8,7 @@ private final class TagStack[A <: AnyRef] { self =>
 
   private[this] var array  = new Array[AnyRef](ArrSize + 1)
   private[this] var packed = 0
+  private[this] var tags = 0
 
   array(ArrSize) = new Array[Int](1) // keep tags as bits in this Int
 
@@ -29,19 +30,19 @@ private final class TagStack[A <: AnyRef] { self =>
     val array0  = array
     if (used == ArrSize) {
       val newArr = new Array[AnyRef](ArrSize + 1)
-      val tags   = new Array[Int](1)
-      tags(0) = if (tag) 2 else 0 // first item will go to array(1), so set the second bit
+      array0(ArrSize).asInstanceOf[Array[Int]](0) = tags
       newArr(0) = array0
       newArr(1) = a
-      newArr(ArrSize) = tags
+      newArr(ArrSize) = new Array[Int](1)
+      tags = if (tag) 2 else 0 // first item will go to array(1), so set the second bit
       array = newArr
       packed += 3
     } else {
       array0(used) = a
       if (tag) {
-        (array0(ArrSize).asInstanceOf[Array[Int]])(0) |= 1 << used
+        tags |= 1 << used
       } else {
-        (array0(ArrSize).asInstanceOf[Array[Int]])(0) &= ~(1 << used)
+        tags &= ~(1 << used)
       }
       packed += 1
     }
@@ -62,6 +63,7 @@ private final class TagStack[A <: AnyRef] { self =>
         val arr0 = a.asInstanceOf[Array[AnyRef]]
         a = arr0(ArrSize - 1)
         array = arr0
+        tags = arr0(ArrSize).asInstanceOf[Array[Int]](0)
         packed -= 3
       } else {
         packed -= 1
@@ -81,10 +83,9 @@ private final class TagStack[A <: AnyRef] { self =>
       val used = packed0 & 0xf
       val idx  = used - 1
       if (idx == 0 && packed0 != 1) {
-        val tags = (array(idx).asInstanceOf[Array[AnyRef]])(ArrSize).asInstanceOf[Array[Int]](0)
-        (tags >> (ArrSize - 1) & 1) == 1
+        val tags0 = (array(idx).asInstanceOf[Array[AnyRef]])(ArrSize).asInstanceOf[Array[Int]](0)
+        (tags0 >> (ArrSize - 1) & 1) == 1
       } else {
-        val tags = (array(ArrSize).asInstanceOf[Array[Int]])(0)
         (tags >> idx & 1) == 1
       }
     }
