@@ -8,7 +8,7 @@ private final class TagStack[A <: AnyRef] { self =>
 
   private[this] var array  = new Array[AnyRef](ArrSize + 1)
   private[this] var packed = 0
-  private[this] var tags = 0
+  private[this] var tags   = 0
 
   array(ArrSize) = new Array[Int](1) // keep tags as bits in this Int
 
