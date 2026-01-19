@@ -75,7 +75,7 @@ private final class TagStack[A <: AnyRef] { self =>
   /**
    *  Returns `true` if tag is set for the item at the top. Returns `false` if the stack is empty.
    */
-  def topTagged: Boolean = {
+  def tagged: Boolean = {
     val packed0 = packed
     if (packed0 == 0) {
       false

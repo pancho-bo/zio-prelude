@@ -1235,7 +1235,7 @@ object ZPure {
 
           case succeed0: Succeed[Any] =>
             a = succeed0.value
-            while (stack.topTagged)
+            while (stack.tagged)
               a = stack.pop().asInstanceOf[Any => Any](a)
             val nextInstr = stack.pop()
             if (nextInstr eq null) {
@@ -1282,7 +1282,7 @@ object ZPure {
           case log0: Log[Any, Any] =>
             _logs addOne log0.log
             a = ()
-            while (stack.topTagged)
+            while (stack.tagged)
               a = stack.pop().asInstanceOf[Any => Any](a)
             val nextInstr = stack.pop()
             if (nextInstr eq null) {
@@ -1301,7 +1301,7 @@ object ZPure {
 
           case environment0: Environment[Any, Any, Any, Any, Any, Any] =>
             a = environment0.access(_environment)
-            while (stack.topTagged)
+            while (stack.tagged)
               a = stack.pop().asInstanceOf[Any => Any](a)
             val nextInstr = stack.pop()
             if (nextInstr eq null) {
@@ -1312,7 +1312,7 @@ object ZPure {
 
           case inspect0: Inspect[Any, Any] =>
             a = inspect0.run0(s0)
-            while (stack.topTagged)
+            while (stack.tagged)
               a = stack.pop().asInstanceOf[Any => Any](a)
             val nextInstr = stack.pop()
             if (nextInstr eq null) {
@@ -1324,7 +1324,7 @@ object ZPure {
           case modify0: Update[Any, Any] =>
             s0 = modify0.run0(s0)
             a = ()
-            while (stack.topTagged)
+            while (stack.tagged)
               a = stack.pop().asInstanceOf[Any => Any](a)
             val nextInstr = stack.pop()
             if (nextInstr eq null) {
