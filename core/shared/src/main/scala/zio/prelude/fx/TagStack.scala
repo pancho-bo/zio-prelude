@@ -30,7 +30,7 @@ private final class TagStack[A <: AnyRef] { self =>
     val array0  = array
     if (used == ArrSize) {
       val newArr = new Array[AnyRef](ArrSize + 1)
-      array0(ArrSize).asInstanceOf[Array[Int]](0) = tags
+      (array0(ArrSize).asInstanceOf[Array[Int]])(0) = tags
       newArr(0) = array0
       newArr(1) = a
       newArr(ArrSize) = new Array[Int](1)
